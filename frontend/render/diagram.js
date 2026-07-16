@@ -74,9 +74,9 @@ function turfBand(band) {
     rx: 6, fill: "#d8dbe0", stroke: "#b7bcc4", "stroke-width": 1,
   }));
   g.append(el("text", {
-    x: band.x + band.w - 8, y: band.y + band.h - 5,
-    "font-size": 9, fill: "#6a7280", "text-anchor": "end", "font-style": "italic",
-  }, `Turf · ${band.name}`));
+    x: band.x + 10 + (band.labelDx || 0), y: band.y + band.h - 4,
+    "font-size": 11, fill: "#565e6a", "font-weight": 700,
+  }, band.name ? `Turf · ${band.name}` : "Turf"));
   if (band.description) g.append(el("title", {}, `Turf: ${band.name}\n${band.description}\n(The stable domain — it exists even if the crew re-teams.)`));
   return g;
 }

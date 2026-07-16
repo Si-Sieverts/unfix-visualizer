@@ -52,15 +52,19 @@ Reading guide:
   at the bottom are platform crews; a narrow bar at the top is governance; vertical
   side blocks are facilitation/capability/experience/partnership crews.
 - Gray horizontal bands behind/around the value-stream crew blocks are TURFS: the stable
-  bounded contexts those crews staff. Emit one turf per band (name it after the domain if
-  labelled, else after the crew's domain) and set turf_id on the value-stream crew sitting
-  on it.
+  bounded contexts those crews staff. Emit one turf per band and set turf_id on the
+  value-stream crew sitting on it. Name each turf after its label if it has one; if the
+  band is unlabelled or only numbered, name it after the domain of the crew on it (e.g.
+  "Checkout domain") — never leave a turf named with just a number.
 - Forums are LARGE OUTLINED CONTAINERS (thin colored borders, e.g. pink/teal) that reach
   from the bottom of the base up around groups of crews, labelled with "Chair"/"Forum".
   MEMBERSHIP RULE: every crew that is inside a forum's outline, on top of it, or touching
-  its borderline is a member of that forum. Trace each outline carefully — forums are
-  usually bigger than they first appear, and several forums may overlap the same crews.
-  Forums (and everything else) are INSIDE the base.
+  its borderline is a member of that forum — typically several value-stream crews, the
+  platform crew, plus the crossing crews the outline passes behind. Trace each outline
+  from its label block all the way up and around — forums are usually much bigger than
+  they first appear, and several forums may overlap the same crews. A forum with only
+  one member is almost certainly traced wrong: re-check the outline. Forums (and
+  everything else) are INSIDE the base.
 - In Team Topologies notation: yellow/orange horizontal bands = stream-aligned
   (map to value-stream), blue/flat = platform, purple = enabling (map to facilitation),
   orange octagon = complicated-subsystem (map to capability).
@@ -69,6 +73,16 @@ Reading guide:
   shows WHICH value streams it spends its capacity with. Record an interaction from the
   overlapping crew to each value-stream crew its block covers (facilitation → mode
   "facilitating"; capability/experience → "collaboration"; only span-covered rows count).
+- COVERAGE DEPTH = CAPACITY: how MUCH of a value-stream row the block covers is the
+  capacity allocation. Fully covering a row → weight 1.0; only partially covering it
+  (block starts or ends midway through the row) → weight ~0.4. Example: a capability
+  crew that fully overlaps the second value stream but only dips into the bottom part
+  of the first spends most of its time with the second (weight 1.0) and less with the
+  first (weight 0.4).
+- IGNORE HAND-DRAWN ANNOTATIONS: freehand marks, highlighter strokes, red pen traces,
+  circles, or arrows that do not match the clean style of the diagram are annotations
+  made by a person on top of the image. They are NOT crews, forums, or interactions —
+  never create any element from them.
 - Lines/arrows between blocks are interactions: solid = x-as-a-service,
   dotted = facilitating, dashed/hatched = collaboration.
 - Use the text labels in the image for names and missions; if a mission is not legible,

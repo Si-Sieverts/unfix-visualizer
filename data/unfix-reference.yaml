@@ -1,0 +1,81 @@
+# The canonical unfix.com Base diagram, encoded as ground truth.
+# Capability crew: full capacity with Value Stream 2, partial (0.4) with
+# Value Stream 1 — rendered as partial lane coverage.
+name: unFIX Reference Base
+bases:
+  - id: main-base
+    name: Base
+
+turfs:
+  - id: turf-1
+    name: Domain 1
+    description: The stable product area staffed by Value Stream Crew 1.
+  - id: turf-2
+    name: Domain 2
+    description: The stable product area staffed by Value Stream Crew 2.
+
+crews:
+  - id: governance-crew
+    name: Governance Crew
+    crew_type: governance
+    base_id: main-base
+    mission: Oversees and constrains the self-organizing crews.
+  - id: partnership-crew
+    name: Partnership Crew
+    crew_type: partnership
+    base_id: main-base
+    mission: Manages relationships with vendors, freelancers, and gig workers.
+  - id: vs1
+    name: Value Stream Crew 1
+    crew_type: value-stream
+    base_id: main-base
+    turf_id: turf-1
+    mission: End-to-end responsibility for value stream 1.
+  - id: vs2
+    name: Value Stream Crew 2
+    crew_type: value-stream
+    base_id: main-base
+    turf_id: turf-2
+    mission: End-to-end responsibility for value stream 2.
+  - id: capability-crew
+    name: Capability Crew
+    crew_type: capability
+    base_id: main-base
+    mission: Rare specialist expertise other crews borrow.
+  - id: facilitation-crew
+    name: Facilitation Crew
+    crew_type: facilitation
+    base_id: main-base
+    mission: Enables the value stream crews to work effectively.
+  - id: experience-crew
+    name: Experience Crew
+    crew_type: experience
+    base_id: main-base
+    mission: Ensures the customer experience is a positive one.
+  - id: platform-crew
+    name: Platform Crew
+    crew_type: platform
+    base_id: main-base
+    mission: Offers shared services to all crews.
+
+forums:
+  - id: forum-1
+    name: Forum 1
+    member_crew_ids: [vs1, vs2, capability-crew, platform-crew]
+    mission: Community of interest spanning the streams, capability, and platform.
+  - id: forum-2
+    name: Forum 2
+    member_crew_ids: [facilitation-crew, experience-crew, platform-crew, vs1, vs2]
+    mission: Community of interest spanning enablement, experience, platform, and streams.
+
+interactions:
+  # Capability crew spends MOST of its capacity with VS2 (full coverage),
+  # only partially with VS1 (dips into the lane).
+  - { from_id: capability-crew, to_id: vs1, mode: collaboration, weight: 0.4 }
+  - { from_id: capability-crew, to_id: vs2, mode: collaboration, weight: 1.0 }
+  - { from_id: facilitation-crew, to_id: vs1, mode: facilitating }
+  - { from_id: facilitation-crew, to_id: vs2, mode: facilitating }
+  - { from_id: experience-crew, to_id: vs1, mode: collaboration }
+  - { from_id: experience-crew, to_id: vs2, mode: collaboration }
+  - { from_id: platform-crew, to_id: vs1, mode: x-as-a-service }
+  - { from_id: platform-crew, to_id: vs2, mode: x-as-a-service }

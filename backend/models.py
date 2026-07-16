@@ -126,6 +126,10 @@ class Interaction(BaseModel):
     to_id: str
     mode: InteractionMode
     note: str = ""
+    # Capacity allocation: 1.0 = full attention to this crew; lower = partial.
+    # Rendered as partial overlap — a crossing crew only partly covers the lane
+    # of a low-weight interaction.
+    weight: float = Field(default=1.0, gt=0.0, le=1.0)
 
 
 class OrgModel(BaseModel):

@@ -24,7 +24,11 @@ Output STRICT JSON (no markdown fences, no commentary) with exactly this shape:
   "crews": [{"id": "<kebab-case>", "name": "...", "crew_type": "value-stream|platform|facilitation|capability|experience|partnership|governance", "base_id": "<id of a base>", "turf_id": "<turf id, value-stream crews only>", "mission": "<one sentence>"}],
   "turfs": [{"id": "<kebab-case>", "name": "...", "description": "<one sentence>"}],
   "forums": [{"id": "<kebab-case>", "name": "...", "member_crew_ids": ["<crew ids>"], "mission": "<one sentence>"}],
-  "interactions": [{"from_id": "<crew or forum id>", "to_id": "<crew id>", "mode": "collaboration|x-as-a-service|facilitating", "note": "<optional>"}]
+  "interactions": [{"from_id": "<crew or forum id>", "to_id": "<crew id>", "mode": "collaboration|x-as-a-service|facilitating", "note": "<optional>", "weight": 1.0}]
+
+Interaction "weight" (0-1, default 1.0) = capacity allocation: use 1.0 unless the text
+says a crew spends more time with one team than another (e.g. "mostly supports X,
+occasionally Y" → X: 1.0, Y: 0.4).
 }
 
 Classification rules (unFIX vocabulary, per the knowledge base):

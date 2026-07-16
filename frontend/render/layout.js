@@ -10,7 +10,7 @@
 const PAD = 26;          // base inner padding
 const GOV_H = 40;        // governance bar height
 const LANE_H = 74;       // value-stream lane height
-const LANE_GAP = 16;
+const LANE_GAP = 34;     // room for the turf label strip below each lane
 const RAIL_W = 108;      // vertical crew block width
 const RAIL_GAP = 14;
 const PLAT_H = 52;       // platform bar height
@@ -20,16 +20,21 @@ const FORUM_GAP = 14;
 const ZONE_GAP = 22;
 const MIN_CENTER_W = 520;
 
-// Which value-stream lanes does a crossing crew serve? Derived from its
-// interactions; a crew with no stated interactions spans all lanes.
-function laneSpan(crew, model, laneIndexById, laneCount) {
-  const targets = new Set();
+// Which value-stream lanes does a crossing crew serve, and how much capacity per
+// lane? Derived from its interactions (weight 0-1); a crew with no stated
+// interactions spans all lanes at full weight.
+function laneCoverage(crew, model, laneIndexById, laneCount) {
+  const cover = new Map(); // lane index -> weight (max across interactions)
   for (const ix of model.interactions) {
     const other = ix.from_id === crew.id ? ix.to_id : ix.to_id === crew.id ? ix.from_id : null;
-    if (other !== null && other in laneIndexById) targets.add(laneIndexById[other]);
+    if (other !== null && other in laneIndexById) {
+      const lane = laneIndexById[other];
+      const w = ix.weight ?? 1.0;
+      cover.set(lane, Math.max(cover.get(lane) ?? 0, w));
+    }
   }
-  if (targets.size === 0) return [0, Math.max(0, laneCount - 1)];
-  return [Math.min(...targets), Math.max(...targets)];
+  if (cover.size === 0) for (let i = 0; i < laneCount; i++) cover.set(i, 1.0);
+  return cover;
 }
 
 export function computeLayout(model) {
@@ -81,10 +86,11 @@ export function computeLayout(model) {
     const bandY = turfTop + i * (LANE_H + LANE_GAP);
     const turf = crew.turf_id ? turfsById[crew.turf_id] : null;
     turfBands.push({
-      x: baseX + PAD - 6, y: bandY - TURF_INSET,
-      w: centerW + 12, h: LANE_H + TURF_INSET * 2,
-      name: turf ? turf.name : "Turf",
+      x: baseX + PAD - 6, y: bandY - 6,
+      w: centerW + 12, h: LANE_H + 6 + 22, // 22px bottom strip for the Turf label
+      name: turf ? turf.name : "",
       description: turf?.description ?? "",
+      labelDx: partnership.length ? leftOverlayW : 0,
     });
     positions[crew.id] = {
       x: baseX + PAD + TURF_INSET,
@@ -109,14 +115,24 @@ export function computeLayout(model) {
 
   // Facilitation / capability / experience crews overlay the lanes they serve:
   // their vertical extent spans exactly the value streams they interact with —
-  // the occlusion IS the information (capacity spent with those crews).
+  // the occlusion IS the information. Partial weight = partial coverage: a crew
+  // spending less capacity with an edge lane only dips partway into it.
   crossing.forEach((crew, i) => {
-    const [first, last] = laneSpan(crew, model, laneIndexById, laneCount);
+    const cover = laneCoverage(crew, model, laneIndexById, laneCount);
+    const lanes = [...cover.keys()];
+    const first = Math.min(...lanes), last = Math.max(...lanes);
+    const firstW = cover.get(first), lastW = cover.get(last);
+    const top = firstW >= 1
+      ? laneTop(first) - OVERHANG
+      : laneTop(first) + (1 - firstW) * LANE_H;
+    const bottom = lastW >= 1
+      ? laneBottom(last) + OVERHANG
+      : laneBottom(last) - (1 - lastW) * LANE_H;
     positions[crew.id] = {
       x: baseX + PAD + centerW - crossingW + i * (RAIL_W + RAIL_GAP),
-      y: laneTop(first) - OVERHANG,
+      y: top,
       w: RAIL_W,
-      h: laneBottom(last) - laneTop(first) + OVERHANG * 2,
+      h: bottom - top,
       kind: "vertical",
     };
   });
