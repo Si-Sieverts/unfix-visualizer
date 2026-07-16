@@ -51,7 +51,16 @@ Reading guide:
 - Wide horizontal blocks in the middle are usually value-stream crews; horizontal bars
   at the bottom are platform crews; a narrow bar at the top is governance; vertical
   side blocks are facilitation/capability/experience/partnership crews.
-- Outlined boxes below or outside the base labelled with "Chair" or "Forum" are forums.
+- Gray horizontal bands behind/around the value-stream crew blocks are TURFS: the stable
+  bounded contexts those crews staff. Emit one turf per band (name it after the domain if
+  labelled, else after the crew's domain) and set turf_id on the value-stream crew sitting
+  on it.
+- Forums are LARGE OUTLINED CONTAINERS (thin colored borders, e.g. pink/teal) that reach
+  from the bottom of the base up around groups of crews, labelled with "Chair"/"Forum".
+  MEMBERSHIP RULE: every crew that is inside a forum's outline, on top of it, or touching
+  its borderline is a member of that forum. Trace each outline carefully — forums are
+  usually bigger than they first appear, and several forums may overlap the same crews.
+  Forums (and everything else) are INSIDE the base.
 - In Team Topologies notation: yellow/orange horizontal bands = stream-aligned
   (map to value-stream), blue/flat = platform, purple = enabling (map to facilitation),
   orange octagon = complicated-subsystem (map to capability).

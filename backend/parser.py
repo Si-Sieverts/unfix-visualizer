@@ -21,7 +21,8 @@ Output STRICT JSON (no markdown fences, no commentary) with exactly this shape:
 {
   "name": "<short name for this organization>",
   "bases": [{"id": "<kebab-case>", "name": "...", "base_type": "fully-integrated|strongly-aligned|loosely-aligned|fully-segregated"}],
-  "crews": [{"id": "<kebab-case>", "name": "...", "crew_type": "value-stream|platform|facilitation|capability|experience|partnership|governance", "base_id": "<id of a base>", "mission": "<one sentence>"}],
+  "crews": [{"id": "<kebab-case>", "name": "...", "crew_type": "value-stream|platform|facilitation|capability|experience|partnership|governance", "base_id": "<id of a base>", "turf_id": "<turf id, value-stream crews only>", "mission": "<one sentence>"}],
+  "turfs": [{"id": "<kebab-case>", "name": "...", "description": "<one sentence>"}],
   "forums": [{"id": "<kebab-case>", "name": "...", "member_crew_ids": ["<crew ids>"], "mission": "<one sentence>"}],
   "interactions": [{"from_id": "<crew or forum id>", "to_id": "<crew id>", "mode": "collaboration|x-as-a-service|facilitating", "note": "<optional>"}]
 }
@@ -36,6 +37,11 @@ Classification rules (unFIX vocabulary, per the knowledge base):
 - Teams observing/owning customer experience across value streams with no product of their own → "experience".
 - Vendor/freelancer relationship teams → "partnership".
 - Oversight/constraint-setting groups → "governance".
+- Every value-stream crew staffs a TURF: the stable bounded context / product area /
+  customer journey it owns (e.g. the "Checkout Experience" domain). Create one turf per
+  value-stream crew (derive the turf name from the domain, not the team name) and set the
+  crew's turf_id. The turf is business architecture — it exists even if the crew is
+  re-teamed; only value-stream crews get turf_id.
 - Communities of interest, guilds, cross-cutting standards groups → forums (NOT crews);
   list every crew the text says participates in member_crew_ids.
 - If the text does not describe multiple bases, use one base and choose base_type from how

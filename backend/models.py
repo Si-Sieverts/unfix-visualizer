@@ -82,12 +82,23 @@ class Base(BaseModel):
     base_type: BaseType | None = None
 
 
+class Turf(BaseModel):
+    """A stable bounded context / product area / customer journey — the 'thing'
+    a value-stream crew takes ownership of. The Turf exists whether or not people
+    are currently assigned to it; crews are the dynamic layer on top."""
+
+    id: str
+    name: str
+    description: str = ""
+
+
 class Crew(BaseModel):
     id: str
     name: str
     crew_type: CrewType
     base_id: str
     mission: str = ""
+    turf_id: str | None = None  # the stable domain this (value-stream) crew staffs
     axis: Axis | None = None
     tt_mapping: TTTeamType | None = None
     position: Position | None = None  # manual override; None → computed layout
@@ -121,6 +132,7 @@ class OrgModel(BaseModel):
     name: str
     bases: list[Base]
     crews: list[Crew]
+    turfs: list[Turf] = Field(default_factory=list)
     forums: list[Forum] = Field(default_factory=list)
     interactions: list[Interaction] = Field(default_factory=list)
 
@@ -128,6 +140,10 @@ class OrgModel(BaseModel):
     def _check_references(self) -> "OrgModel":
         base_ids = {b.id for b in self.bases}
         crew_ids = {c.id for c in self.crews}
+        turf_ids = {t.id for t in self.turfs}
+        for crew in self.crews:
+            if crew.turf_id is not None and crew.turf_id not in turf_ids:
+                raise ValueError(f"crew '{crew.id}' references unknown turf '{crew.turf_id}'")
         node_ids = crew_ids | {f.id for f in self.forums}
 
         for crew in self.crews:

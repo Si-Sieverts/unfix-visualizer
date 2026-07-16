@@ -6,22 +6,37 @@ bases:
     name: Product Base
     base_type: strongly-aligned
 
+# Turfs: the stable domain layer — these exist even if the crews re-team.
+turfs:
+  - id: turf-onboarding
+    name: Onboarding & Identity domain
+    description: User lifecycle from signup to authenticated session.
+  - id: turf-checkout
+    name: Checkout domain
+    description: The purchase funnel from cart to confirmed order.
+  - id: turf-engagement
+    name: Engagement domain
+    description: Customer communication loop and retention.
+
 crews:
   # I. Value Stream Crews (X-axis — the engines)
   - id: onboarding-identity
     name: Onboarding & Identity Crew
     crew_type: value-stream
     base_id: main-base
+    turf_id: turf-onboarding
     mission: Owns the user lifecycle from signup to authenticated session.
   - id: checkout-experience
     name: Checkout Experience Crew
     crew_type: value-stream
     base_id: main-base
+    turf_id: turf-checkout
     mission: Owns the funnel from "Add to Cart" to "Order Confirmed".
   - id: notifications-engagement
     name: Notifications & Engagement Crew
     crew_type: value-stream
     base_id: main-base
+    turf_id: turf-engagement
     mission: Owns the communication loop (email/push/SMS) and user retention.
 
   # II. Platform Crews (Y-axis — the foundation)

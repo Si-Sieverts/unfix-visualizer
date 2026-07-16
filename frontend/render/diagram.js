@@ -67,6 +67,31 @@ function crewBlock(crew, pos) {
   return g;
 }
 
+function turfBand(band) {
+  const g = el("g", { class: "turf" });
+  g.append(el("rect", {
+    x: band.x, y: band.y, width: band.w, height: band.h,
+    rx: 6, fill: "#d8dbe0", stroke: "#b7bcc4", "stroke-width": 1,
+  }));
+  g.append(el("text", {
+    x: band.x + band.w - 8, y: band.y + band.h - 5,
+    "font-size": 9, fill: "#6a7280", "text-anchor": "end", "font-style": "italic",
+  }, `Turf · ${band.name}`));
+  if (band.description) g.append(el("title", {}, `Turf: ${band.name}\n${band.description}\n(The stable domain — it exists even if the crew re-teams.)`));
+  return g;
+}
+
+function forumOutline(outline, forum) {
+  const color = FORUM_OUTLINES[outline.index % FORUM_OUTLINES.length];
+  const g = el("g", { class: "forum-outline", "data-id": forum.id });
+  g.append(el("rect", {
+    x: outline.x, y: outline.y, width: outline.w, height: outline.h,
+    rx: 16, fill: "none", stroke: color, "stroke-width": 2.5, opacity: 0.9,
+  }));
+  g.append(el("title", {}, `${forum.name} — everything inside or touching this outline is a member`));
+  return g;
+}
+
 function forumBlock(forum, pos, index, crewsById) {
   const outline = FORUM_OUTLINES[index % FORUM_OUTLINES.length];
   const g = el("g", { class: "forum", "data-id": forum.id });
@@ -163,8 +188,9 @@ function legend(x, y) {
 
 export function renderDiagram(svg, model, options = {}) {
   const { showInteractions = true } = options;
-  const { positions, base, totalW, totalH } = computeLayout(model);
+  const { positions, turfBands, forumOutlines, base, totalW, totalH } = computeLayout(model);
   const crewsById = Object.fromEntries(model.crews.map((c) => [c.id, c]));
+  const forumsById = Object.fromEntries(model.forums.map((f) => [f.id, f]));
 
   svg.replaceChildren();
   svg.append(defs());
@@ -183,8 +209,15 @@ export function renderDiagram(svg, model, options = {}) {
     x: base.x + 6, y: base.y - 22, "font-size": 15, "font-weight": 800, fill: "#40474f",
   }, `🏠 ${baseName}${model.bases[0]?.base_type ? "  ·  " + model.bases[0].base_type + " base" : ""}`));
 
+  const domainLayer = el("g", { class: "domain" });      // turf bands + forum outlines (behind everything)
   const interactionLayer = el("g", { class: "interactions" });
   const blockLayer = el("g", { class: "blocks" });
+
+  for (const band of turfBands) domainLayer.append(turfBand(band));
+  for (const outline of forumOutlines) {
+    const forum = forumsById[outline.forumId];
+    if (forum) domainLayer.append(forumOutline(outline, forum));
+  }
 
   // Draw lanes and bars first, crossing (vertical) crews last — they must sit
   // ON TOP of the value streams they serve (unFIX occlusion semantics).
@@ -208,7 +241,7 @@ export function renderDiagram(svg, model, options = {}) {
     }
   }
 
-  root.append(interactionLayer, blockLayer);
+  root.append(domainLayer, interactionLayer, blockLayer);
   svg.append(root);
   svg.append(legend(margin - 8, margin + 20));
 
