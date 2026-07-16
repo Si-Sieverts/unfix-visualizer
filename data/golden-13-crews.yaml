@@ -1,0 +1,119 @@
+# Golden test case: the 13-crew reference organization.
+# Hand-written ground truth for renderer (M1) and parse-pipeline assertions (M2).
+name: Golden 13-Crew Organization
+bases:
+  - id: main-base
+    name: Product Base
+    base_type: strongly-aligned
+
+crews:
+  # I. Value Stream Crews (X-axis — the engines)
+  - id: onboarding-identity
+    name: Onboarding & Identity Crew
+    crew_type: value-stream
+    base_id: main-base
+    mission: Owns the user lifecycle from signup to authenticated session.
+  - id: checkout-experience
+    name: Checkout Experience Crew
+    crew_type: value-stream
+    base_id: main-base
+    mission: Owns the funnel from "Add to Cart" to "Order Confirmed".
+  - id: notifications-engagement
+    name: Notifications & Engagement Crew
+    crew_type: value-stream
+    base_id: main-base
+    mission: Owns the communication loop (email/push/SMS) and user retention.
+
+  # II. Platform Crews (Y-axis — the foundation)
+  - id: developer-platform
+    name: Developer Platform Crew
+    crew_type: platform
+    base_id: main-base
+    mission: Owns CI/CD pipeline, artifact repositories, and local development environment setup.
+  - id: cloud-infrastructure
+    name: Cloud & Infrastructure Crew
+    crew_type: platform
+    base_id: main-base
+    mission: Owns cloud accounts, Kubernetes cluster, networking, and secret management.
+  - id: data-platform
+    name: Data Platform Crew
+    crew_type: platform
+    base_id: main-base
+    mission: Owns the data lake, telemetry ingestion pipelines, and database reliability.
+  - id: authn-authz-platform
+    name: AuthN/AuthZ Platform Crew
+    crew_type: platform
+    base_id: main-base
+    mission: Owns the core identity providers and permissions engine.
+
+  # III. Enablement Crews (Y-axis — the accelerators; unFIX: facilitation)
+  - id: security-enablement
+    name: Security Enablement Crew
+    crew_type: facilitation
+    base_id: main-base
+    mission: Self-service threat modeling templates and automated security scanning tools.
+  - id: devex
+    name: DevEx Crew
+    crew_type: facilitation
+    base_id: main-base
+    mission: Documentation, golden-path templates, and removing developer-workflow friction.
+  - id: data-literacy
+    name: Data Literacy Enablement Crew
+    crew_type: facilitation
+    base_id: main-base
+    mission: Helps VS crews query their own data; SQL training; standard analytics events.
+
+  # IV. Facilitation & Governance (Z-axis — the glue)
+  - id: experience-crew
+    name: Experience Crew
+    crew_type: experience
+    base_id: main-base
+    mission: Observes the customer journey across VS crews; reports flow bottlenecks.
+
+forums:
+  - id: architecture-forum
+    name: Architecture Forum
+    member_crew_ids:
+      - onboarding-identity
+      - checkout-experience
+      - notifications-engagement
+      - developer-platform
+      - cloud-infrastructure
+      - data-platform
+      - authn-authz-platform
+    mission: Cross-crew standards (event schemas, API versions) to keep the stack coherent.
+  - id: quality-guild
+    name: Quality/Guild Forum
+    member_crew_ids:
+      - onboarding-identity
+      - checkout-experience
+      - notifications-engagement
+      - developer-platform
+      - cloud-infrastructure
+      - data-platform
+      - authn-authz-platform
+      - security-enablement
+      - devex
+      - data-literacy
+    mission: Defines the Definition of Done; shares testing best practices across crews.
+
+interactions:
+  # Platform crews serve VS crews (X-as-a-Service)
+  - { from_id: authn-authz-platform, to_id: onboarding-identity, mode: x-as-a-service, note: identity providers & permissions engine }
+  - { from_id: developer-platform, to_id: onboarding-identity, mode: x-as-a-service }
+  - { from_id: developer-platform, to_id: checkout-experience, mode: x-as-a-service }
+  - { from_id: developer-platform, to_id: notifications-engagement, mode: x-as-a-service }
+  - { from_id: cloud-infrastructure, to_id: developer-platform, mode: x-as-a-service }
+  - { from_id: data-platform, to_id: notifications-engagement, mode: x-as-a-service }
+  # Enablement crews facilitate VS crews
+  - { from_id: security-enablement, to_id: onboarding-identity, mode: facilitating }
+  - { from_id: security-enablement, to_id: checkout-experience, mode: facilitating }
+  - { from_id: devex, to_id: onboarding-identity, mode: facilitating }
+  - { from_id: devex, to_id: checkout-experience, mode: facilitating }
+  - { from_id: devex, to_id: notifications-engagement, mode: facilitating }
+  - { from_id: data-literacy, to_id: checkout-experience, mode: facilitating }
+  - { from_id: data-literacy, to_id: notifications-engagement, mode: facilitating }
+  # Experience crew observes across VS crews
+  - { from_id: experience-crew, to_id: onboarding-identity, mode: collaboration, note: journey observation }
+  - { from_id: experience-crew, to_id: checkout-experience, mode: collaboration, note: journey observation }
+  - { from_id: experience-crew, to_id: notifications-engagement, mode: collaboration, note: journey observation }

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>unFIX Visualizer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+      display: flex; flex-direction: column; height: 100vh; background: #e9ebee; color: #24292f;
+    }
+    header {
+      display: flex; align-items: center; gap: 14px; padding: 10px 18px;
+      background: #1f2733; color: #fff;
+    }
+    header h1 { font-size: 17px; font-weight: 700; }
+    header .tag { font-size: 11px; opacity: 0.7; }
+    main { display: flex; flex: 1; min-height: 0; }
+    aside {
+      width: 340px; padding: 14px; background: #f7f8fa; border-right: 1px solid #d4d8dd;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    aside label { font-size: 12px; font-weight: 700; color: #4a5361; }
+    textarea {
+      flex: 1; min-height: 200px; resize: none; padding: 10px; font-size: 12px;
+      font-family: ui-monospace, Menlo, monospace; border: 1px solid #c8cdd4; border-radius: 8px;
+    }
+    button {
+      padding: 8px 12px; border: none; border-radius: 8px; font-weight: 700; font-size: 13px;
+      cursor: pointer; background: #d7dbe2; color: #24292f;
+    }
+    button.primary { background: #f6a13c; color: #3a2200; }
+    button:disabled { opacity: 0.5; cursor: wait; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    select { flex: 1; padding: 7px; border-radius: 8px; border: 1px solid #c8cdd4; font-size: 12px; }
+    .status { font-size: 12px; color: #4a5361; min-height: 30px; }
+    .status.error { color: #b3261e; font-weight: 600; }
+    .canvas-wrap { flex: 1; overflow: hidden; position: relative; }
+    svg { width: 100%; height: 100%; display: block; background: #ffffff; }
+    .hint { font-size: 11px; color: #7a828d; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧩 unFIX Visualizer</h1>
+    <span class="tag">text → unFIX diagram · grounded in your LightRAG (unfix.com + Team Topologies)</span>
+  </header>
+  <main>
+    <aside>
+      <label for="crew-input">Crew list (plain text)</label>
+      <textarea id="crew-input" placeholder="Paste a list of teams/crews here, e.g.&#10;&#10;1. Onboarding & Identity Crew: owns the user lifecycle …&#10;2. Developer Platform Crew: owns CI/CD …&#10;3. Architecture Forum: cross-cutting standards group …"></textarea>
+      <div class="row">
+        <button id="btn-parse" class="primary">Parse → Diagram</button>
+        <button id="btn-save">Save model</button>
+      </div>
+      <div class="row">
+        <select id="model-picker"></select>
+      </div>
+      <div class="row">
+        <button id="btn-import-image">Import diagram image…</button>
+        <input type="file" id="image-file" accept="image/png,image/jpeg,image/webp" hidden />
+      </div>
+      <div class="row">
+        <button id="btn-export-svg">Export SVG</button>
+        <button id="btn-export-png">Export PNG</button>
+        <button id="btn-export-list">Export crew list</button>
+      </div>
+      <div class="row">
+        <label><input type="checkbox" id="toggle-interactions" checked /> show interactions</label>
+      </div>
+      <div id="status" class="status">Loading…</div>
+      <div class="hint">Drag crews to reposition · scroll to zoom · drag background to pan. Hover any block or line for details.</div>
+    </aside>
+    <div class="canvas-wrap">
+      <svg id="diagram" viewBox="0 0 900 500" preserveAspectRatio="xMidYMin meet"></svg>
+    </div>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
