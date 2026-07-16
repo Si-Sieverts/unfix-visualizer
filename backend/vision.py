@@ -55,6 +55,11 @@ Reading guide:
 - In Team Topologies notation: yellow/orange horizontal bands = stream-aligned
   (map to value-stream), blue/flat = platform, purple = enabling (map to facilitation),
   orange octagon = complicated-subsystem (map to capability).
+- OCCLUSION CARRIES MEANING: when a vertical crew block (facilitation, capability,
+  experience, partnership) is drawn overlapping value-stream rows, its vertical extent
+  shows WHICH value streams it spends its capacity with. Record an interaction from the
+  overlapping crew to each value-stream crew its block covers (facilitation → mode
+  "facilitating"; capability/experience → "collaboration"; only span-covered rows count).
 - Lines/arrows between blocks are interactions: solid = x-as-a-service,
   dotted = facilitating, dashed/hatched = collaboration.
 - Use the text labels in the image for names and missions; if a mission is not legible,

@@ -20,23 +20,39 @@ const FORUM_GAP = 14;
 const ZONE_GAP = 22;
 const MIN_CENTER_W = 520;
 
+// Which value-stream lanes does a crossing crew serve? Derived from its
+// interactions; a crew with no stated interactions spans all lanes.
+function laneSpan(crew, model, laneIndexById, laneCount) {
+  const targets = new Set();
+  for (const ix of model.interactions) {
+    const other = ix.from_id === crew.id ? ix.to_id : ix.to_id === crew.id ? ix.from_id : null;
+    if (other !== null && other in laneIndexById) targets.add(laneIndexById[other]);
+  }
+  if (targets.size === 0) return [0, Math.max(0, laneCount - 1)];
+  return [Math.min(...targets), Math.max(...targets)];
+}
+
 export function computeLayout(model) {
   const byType = (t) => model.crews.filter((c) => c.crew_type === t);
   const governance = byType("governance");
   const partnership = byType("partnership");
   const valueStreams = byType("value-stream");
-  const rightRail = [...byType("facilitation"), ...byType("capability"), ...byType("experience")];
+  const crossing = [...byType("facilitation"), ...byType("capability"), ...byType("experience")];
   const platforms = byType("platform");
 
+  const laneCount = Math.max(1, valueStreams.length);
   const centerH = Math.max(
     valueStreams.length * LANE_H + Math.max(0, valueStreams.length - 1) * LANE_GAP,
-    rightRail.length > 0 || partnership.length > 0 ? 3 * LANE_H : LANE_H
+    crossing.length > 0 || partnership.length > 0 ? 3 * LANE_H : LANE_H
   );
-  const leftRailW = partnership.length ? partnership.length * (RAIL_W + RAIL_GAP) : 0;
-  const rightRailW = rightRail.length ? rightRail.length * (RAIL_W + RAIL_GAP) : 0;
-  const centerW = Math.max(MIN_CENTER_W, 64 * Math.max(1, valueStreams.length));
+  // Crossing crews sit ON TOP of the lanes (unFIX occlusion semantics), so the
+  // lanes must be wide enough to keep their labels readable to the left of the
+  // crossing slots.
+  const leftOverlayW = partnership.length * (RAIL_W + RAIL_GAP);
+  const crossingW = crossing.length * (RAIL_W + RAIL_GAP);
+  const centerW = Math.max(MIN_CENTER_W, 340 + leftOverlayW + crossingW);
 
-  const innerW = leftRailW + centerW + rightRailW;
+  const innerW = centerW;
   const baseW = innerW + PAD * 2;
 
   const govZoneH = governance.length ? governance.length * (GOV_H + 8) + ZONE_GAP : 0;
@@ -54,23 +70,41 @@ export function computeLayout(model) {
   cursorY += govZoneH;
 
   const turfTop = cursorY;
-  partnership.forEach((crew, i) => {
-    positions[crew.id] = {
-      x: baseX + PAD + i * (RAIL_W + RAIL_GAP),
-      y: turfTop, w: RAIL_W, h: centerH, kind: "vertical",
-    };
-  });
+  const laneIndexById = {};
   valueStreams.forEach((crew, i) => {
+    laneIndexById[crew.id] = i;
     positions[crew.id] = {
-      x: baseX + PAD + leftRailW,
+      x: baseX + PAD,
       y: turfTop + i * (LANE_H + LANE_GAP),
       w: centerW, h: LANE_H, kind: "lane",
+      // keep lane titles readable to the right of the partnership overlay
+      labelDx: partnership.length ? leftOverlayW : 0,
     };
   });
-  rightRail.forEach((crew, i) => {
+
+  const laneTop = (i) => turfTop + i * (LANE_H + LANE_GAP);
+  const laneBottom = (i) => laneTop(i) + LANE_H;
+  const OVERHANG = 12; // crossing crews poke out past the lanes they serve
+
+  // Partnership crews cross ALL lanes at the left edge (per the unFIX Base diagram).
+  partnership.forEach((crew, i) => {
     positions[crew.id] = {
-      x: baseX + PAD + leftRailW + centerW + RAIL_GAP + i * (RAIL_W + RAIL_GAP),
-      y: turfTop, w: RAIL_W, h: centerH, kind: "vertical",
+      x: baseX + PAD + 6 + i * (RAIL_W + RAIL_GAP),
+      y: turfTop - OVERHANG, w: RAIL_W, h: centerH + OVERHANG * 2, kind: "vertical",
+    };
+  });
+
+  // Facilitation / capability / experience crews overlay the lanes they serve:
+  // their vertical extent spans exactly the value streams they interact with —
+  // the occlusion IS the information (capacity spent with those crews).
+  crossing.forEach((crew, i) => {
+    const [first, last] = laneSpan(crew, model, laneIndexById, laneCount);
+    positions[crew.id] = {
+      x: baseX + PAD + centerW - crossingW + i * (RAIL_W + RAIL_GAP),
+      y: laneTop(first) - OVERHANG,
+      w: RAIL_W,
+      h: laneBottom(last) - laneTop(first) + OVERHANG * 2,
+      kind: "vertical",
     };
   });
   cursorY = turfTop + centerH;

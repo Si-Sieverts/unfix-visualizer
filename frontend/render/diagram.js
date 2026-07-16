@@ -42,8 +42,9 @@ function crewBlock(crew, pos) {
   );
 
   const vertical = pos.kind === "vertical";
+  const labelDx = vertical ? 0 : (pos.labelDx || 0);
   const title = el("text", {
-    x: pos.x + (vertical ? pos.w / 2 : 14),
+    x: pos.x + (vertical ? pos.w / 2 : 14 + labelDx),
     y: pos.y + (vertical ? 26 : 24),
     fill: color.text, "font-size": vertical ? 12 : 14, "font-weight": 700,
     "text-anchor": vertical ? "middle" : "start",
@@ -55,7 +56,7 @@ function crewBlock(crew, pos) {
     ? `${CREW_ICONS[crew.crew_type]} 👤 Captain`
     : `${CREW_ICONS[crew.crew_type]} ${CREW_LABELS[crew.crew_type]} · 👤 ${crew.crew_type === "governance" ? "Chiefs" : "Captain"}`;
   const sub = el("text", {
-    x: pos.x + (vertical ? pos.w / 2 : 14),
+    x: pos.x + (vertical ? pos.w / 2 : 14 + labelDx),
     y: pos.y + pos.h - 10,
     fill: color.text, "font-size": 10, opacity: 0.85,
     "text-anchor": vertical ? "middle" : "start",
@@ -185,7 +186,13 @@ export function renderDiagram(svg, model, options = {}) {
   const interactionLayer = el("g", { class: "interactions" });
   const blockLayer = el("g", { class: "blocks" });
 
-  for (const crew of model.crews) {
+  // Draw lanes and bars first, crossing (vertical) crews last — they must sit
+  // ON TOP of the value streams they serve (unFIX occlusion semantics).
+  const drawOrder = [...model.crews].sort((a, b) => {
+    const rank = (c) => (positions[c.id]?.kind === "vertical" ? 1 : 0);
+    return rank(a) - rank(b);
+  });
+  for (const crew of drawOrder) {
     const pos = positions[crew.id];
     if (pos) blockLayer.append(crewBlock(crew, pos));
   }
