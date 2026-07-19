@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1f2733" />
+  <title>unFIX Visualizer</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧩</text></svg>" />
+  <style>
+    * { box-sizing: border-box; margin: 0; -webkit-tap-highlight-color: transparent; }
+    :root { --bg: #f2f3f6; --card: #ffffff; --ink: #23292f; --muted: #6a7280; --accent: #f6a13c; }
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg); color: var(--ink);
+      min-height: 100dvh; display: flex; flex-direction: column;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    header {
+      background: #1f2733; color: #fff; display: flex; align-items: center; gap: 10px;
+      padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+      position: sticky; top: 0; z-index: 5;
+    }
+    header h1 { font-size: 17px; }
+    header .spacer { flex: 1; }
+    header button { background: none; border: none; font-size: 20px; color: #fff; padding: 6px; }
+    main { flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 16px; }
+    .card { background: var(--card); border-radius: 16px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .big-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+      padding: 16px; border: none; border-radius: 14px; font-size: 17px; font-weight: 700;
+      background: var(--accent); color: #3a2200; margin-bottom: 10px;
+    }
+    .big-btn.secondary { background: #e4e7ec; color: var(--ink); }
+    .big-btn:active { transform: scale(.985); }
+    .hint { font-size: 13px; color: var(--muted); text-align: center; }
+    textarea {
+      width: 100%; min-height: 130px; padding: 12px; font-size: 14px; border-radius: 12px;
+      border: 1px solid #ccd1d8; font-family: ui-monospace, Menlo, monospace; margin-bottom: 10px;
+    }
+    #status { font-size: 14px; color: var(--muted); text-align: center; min-height: 20px; }
+    #status.error { color: #b3261e; font-weight: 600; }
+    #status.busy::before { content: "⏳ "; }
+    #result { display: none; flex: 1; flex-direction: column; gap: 10px; }
+    #diagram-wrap {
+      background: #fff; border-radius: 16px; overflow: hidden; touch-action: none;
+      height: 55dvh; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    #diagram { width: 100%; height: 100%; display: block; }
+    .action-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .action-row button {
+      flex: 1; min-width: 90px; padding: 12px 8px; border: none; border-radius: 12px;
+      font-size: 14px; font-weight: 700; background: #e4e7ec; color: var(--ink);
+    }
+    .action-row button.primary { background: var(--accent); color: #3a2200; }
+    dialog {
+      border: none; border-radius: 16px; padding: 20px; width: min(420px, 92vw);
+      margin: auto;
+    }
+    dialog::backdrop { background: rgba(0,0,0,.45); }
+    dialog h2 { font-size: 16px; margin-bottom: 10px; }
+    dialog p { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+    dialog input {
+      width: 100%; padding: 12px; font-size: 14px; border-radius: 10px;
+      border: 1px solid #ccd1d8; margin-bottom: 12px;
+    }
+    dialog .action-row button { padding: 12px; }
+    #preview-img { max-width: 100%; border-radius: 12px; display: none; margin: 0 auto 10px; max-height: 30dvh; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧩 unFIX Visualizer</h1>
+    <span class="spacer"></span>
+    <button id="btn-settings" aria-label="Settings">⚙️</button>
+  </header>
+  <main>
+    <section class="card" id="input-card">
+      <button class="big-btn" id="btn-camera">📷 Take a photo</button>
+      <button class="big-btn secondary" id="btn-gallery">🖼️ Choose from photos</button>
+      <input type="file" id="file-camera" accept="image/*" capture="environment" hidden />
+      <input type="file" id="file-gallery" accept="image/*" hidden />
+      <p class="hint">Snap a whiteboard, slide, or book page showing an unFIX / Team Topologies diagram — or paste a crew list below.</p>
+      <details style="margin-top:10px">
+        <summary style="font-size:14px;font-weight:700">✍️ Paste a crew list instead</summary>
+        <div style="margin-top:10px">
+          <textarea id="crew-text" placeholder="1. Onboarding Crew: owns signup …&#10;2. Platform Crew: owns CI/CD …&#10;3. Architecture Forum: standards group …"></textarea>
+          <button class="big-btn" id="btn-parse-text" style="margin-bottom:0">Parse text → Diagram</button>
+        </div>
+      </details>
+    </section>
+
+    <img id="preview-img" alt="Selected diagram" />
+    <p id="status"></p>
+
+    <section id="result">
+      <div id="diagram-wrap"><svg id="diagram" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <div class="action-row">
+        <button class="primary" id="btn-new">🔄 New scan</button>
+        <button id="btn-png">PNG</button>
+        <button id="btn-svg">SVG</button>
+        <button id="btn-list">Crew list</button>
+      </div>
+      <p class="hint">Drag to pan · pinch to zoom · tap blocks for details</p>
+    </section>
+  </main>
+
+  <dialog id="settings">
+    <h2>OpenRouter API key</h2>
+    <p>The app talks directly from your phone to OpenRouter — there is no server.
+       Your key is stored only on this device (localStorage) and sent only to openrouter.ai.
+       Get a key at openrouter.ai/keys.</p>
+    <input type="password" id="api-key" placeholder="sk-or-…" autocomplete="off" />
+    <div class="action-row">
+      <button id="btn-save-key" class="primary">Save</button>
+      <button id="btn-close-settings">Close</button>
+    </div>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
